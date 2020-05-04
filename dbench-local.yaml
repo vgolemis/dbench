@@ -51,7 +51,7 @@ spec:
       containers:
       - name: dbench
         image: logdna/dbench:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
           - name: DBENCH_MOUNTPOINT
             value: /data
