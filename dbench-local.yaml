@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dbench-pv
+  labels:
+    app: dbench
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /storage/test
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - kube-dev
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dbench-pv-claim
+spec:
+  storageClassName: local-storage
+  # storageClassName: gp2
+  # storageClassName: ssd
+  # storageClassName: ibmc-block-bronze
+  # storageClassName: ibmc-block-silver
+  # storageClassName: ibmc-block-gold
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: dbench-pv
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dbench
+spec:
+  template:
+    spec:
+      containers:
+      - name: dbench
+        image: logdna/dbench:latest
+        imagePullPolicy: Always
+        env:
+          - name: DBENCH_MOUNTPOINT
+            value: /data
+          # - name: DBENCH_QUICK
+          #   value: "yes"
+          # - name: FIO_SIZE
+          #   value: 1G
+          # - name: FIO_OFFSET_INCREMENT
+          #   value: 256M
+          # - name: FIO_DIRECT
+          #   value: "0"
+        volumeMounts:
+        - name: dbench-pv
+          mountPath: /data
+      restartPolicy: Never
+      volumes:
+      - name: dbench-pv
+        persistentVolumeClaim:
+          claimName: dbench-pv-claim
+  backoffLimit: 4
