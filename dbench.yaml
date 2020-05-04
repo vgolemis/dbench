@@ -3,9 +3,9 @@ apiVersion: v1
 metadata:
   name: dbench-pv-claim
 spec:
-  storageClassName: ssd
+  storageClassName: local-storage
   # storageClassName: gp2
-  # storageClassName: local-storage
+  # storageClassName: ssd
   # storageClassName: ibmc-block-bronze
   # storageClassName: ibmc-block-silver
   # storageClassName: ibmc-block-gold
